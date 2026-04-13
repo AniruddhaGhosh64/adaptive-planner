@@ -21,19 +21,27 @@ class AdjustRequest(BaseModel):
     current_plan: List[dict]
     event: str
 
+class SmartRequest(PlanRequest):
+    event: str
+
 @app.get("/")
 def read_root():
     return {"status": "API is running"}
 
+_gemini_model = None
+
 def get_gemini_model():
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise HTTPException(
-            status_code=500,
-            detail="GEMINI_API_KEY environment variable not set"
-        )
-    genai.configure(api_key=api_key)
-    return genai.GenerativeModel("gemini-2.5-flash")
+    global _gemini_model
+    if _gemini_model is None:
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise HTTPException(
+                status_code=500,
+                detail="GEMINI_API_KEY environment variable not set"
+            )
+        genai.configure(api_key=api_key)
+        _gemini_model = genai.GenerativeModel("gemini-2.5-flash")
+    return _gemini_model
 
 def parse_gemini_response(response):
     raw_text = response.text.strip()
@@ -52,7 +60,7 @@ def generate_plan_logic(request: PlanRequest) -> List[dict]:
     prompt = f"""
 You are a strict planning assistant.
 
-Create a realistic daily schedule.
+Create a realistic, well-paced daily schedule.
 
 INPUT:
 Tasks: {', '.join(request.tasks)}
@@ -60,11 +68,13 @@ Constraints: {request.constraints}
 Energy Level: {request.energy}
 
 RULES:
-- Respect all constraints strictly
-- Distribute tasks realistically
-- If energy is low, reduce heavy tasks
-- Include breaks if needed
-- Do not overlap time blocks
+- Respect all constraints strictly.
+- Distribute tasks realistically and estimate appropriate durations for each.
+- Ensure logical chronological order and even distribution across standard waking hours.
+- Encourage full-day coverage; pad the day with reasonable downtime, meals, and rest where necessary.
+- If energy is low, spread out heavy tasks and ensure adequate recovery time.
+- Include necessary breaks between long activities.
+- Do not overlap time blocks.
 
 OUTPUT FORMAT (STRICT JSON ONLY):
 [
@@ -147,10 +157,9 @@ def adjust_plan(request: AdjustRequest):
     return adjust_plan_logic(request.current_plan, request.event)
 
 @app.post("/smart-plan")
-def smart_plan(request: PlanRequest):
+def smart_plan(request: SmartRequest):
     original_plan = generate_plan_logic(request)
-    event = "User woke up late and missed first task"
-    adjusted_plan = adjust_plan_logic(original_plan, event)
+    adjusted_plan = adjust_plan_logic(original_plan, request.event)
     
     return {
         "original_plan": original_plan,

@@ -5,6 +5,10 @@
 ## The Problem It Solves
 Traditional calendars are rigid and don't reflect the realities of day-to-day life. When you oversleep, a meeting runs late, or your energy drops, static schedules fall apart. **Adaptive Planner** aims to solve this by providing dynamic time-boxing that acts like a personal assistant—not just putting blocks on a timeline, but constantly evaluating when to do tasks based on current contexts, shifting priorities seamlessly.
 
+## Live Demo
+You can try the live API deployed on Google Cloud Run here:
+[Cloud Run URL Placeholder]
+
 ## Features
 - **Plan Day (`/plan-day`)**: Feed the API a list of your tasks, constraints (e.g., "must be done by 5 PM"), and your current energy level. The API constructs a strict, non-overlapping JSON schedule.
 - **Adjust Plan (`/adjust-plan`)**: Life happens. Give the API your existing plan and the disruption (e.g., "internet went out for 2 hours"), and it will intelligently shuffle, re-prioritize, and reschedule your day.
