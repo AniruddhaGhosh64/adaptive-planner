@@ -7,7 +7,7 @@ Traditional calendars are rigid and don't reflect the realities of day-to-day li
 
 ## Live Demo
 You can try the live API deployed on Google Cloud Run here:
-[[Cloud Run URL Placeholder]]([https://adaptive-planner-910282726941.asia-south1.run.app/](https://adaptive-planner-910282726941.asia-south1.run.app/docs))
+[[Cloud Run URL Placeholder]]([https://adaptive-planner-910282726941.asia-south1.run.app/docs])
 
 ## Features
 - **Plan Day (`/plan-day`)**: Feed the API a list of your tasks, constraints (e.g., "must be done by 5 PM"), and your current energy level. The API constructs a strict, non-overlapping JSON schedule.
