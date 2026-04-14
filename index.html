@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0.2) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0.2) 0, transparent 50%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loader {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+            border: 1px solid var(--error);
+        }
+
+        .results {
+            display: none;
+            gap: 2rem;
+            flex-direction: column;
+        }
+
+        .results.active {
+            display: flex;
+        }
+
+        .plan-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .timeline-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+        }
+
+        .adjusted-item::before {
+            background: var(--success);
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .adjusted-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .activity {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-main);
+        }
+
+        .notes {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        @media (min-width: 768px) {
+            .results {
+                flex-direction: row;
+            }
+
+            .plan-section {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Adaptive Planner</h1>
+            <p class="subtitle">AI-Powered Intelligent Scheduling</p>
+        </header>
+
+        <div class="card">
+            <form id="planForm">
+                <div class="form-group">
+                    <label for="tasks">Tasks (comma-separated)</label>
+                    <input type="text" id="tasks" placeholder="e.g. Read emails, Write documentation, Code review"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="constraints">Constraints</label>
+                    <input type="text" id="constraints" placeholder="e.g. Hard stop at 6 PM, 1 hour lunch break"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="energy">Energy Level</label>
+                    <input type="text" id="energy" placeholder="e.g. High energy morning, tired in afternoon" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="event">Disruption / Adjust Event</label>
+                    <textarea id="event" placeholder="e.g. Woke up 2 hours late and missed the first task"
+                        required></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn">
+                    <span id="btnText">Generate Smart Plan</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+            </form>
+
+            <div id="errorBox" class="error-message"></div>
+        </div>
+
+        <div class="results" id="resultsContainer">
+            <div class="plan-section">
+                <h2>📅 Original Plan</h2>
+                <div class="timeline" id="originalPlanList"></div>
+            </div>
+
+            <div class="plan-section">
+                <h2 style="color: var(--success);">⚡ Adjusted Plan</h2>
+                <div class="timeline" id="adjustedPlanList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('planForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loader = document.getElementById('loader');
+        const errorBox = document.getElementById('errorBox');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const originalPlanList = document.getElementById('originalPlanList');
+        const adjustedPlanList = document.getElementById('adjustedPlanList');
+
+        const API_URL = "https://adaptive-planner-910282726941.asia-south1.run.app/smart-plan";
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Reset state
+            errorBox.style.display = 'none';
+            resultsContainer.classList.remove('active');
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+
+            // Parse inputs
+            const tasksStr = document.getElementById('tasks').value;
+            const tasksArray = tasksStr.split(',').map(t => t.trim()).filter(t => t);
+            const constraints = document.getElementById('constraints').value.trim();
+            const energy = document.getElementById('energy').value.trim();
+            const event = document.getElementById('event').value.trim();
+
+            const payload = {
+                tasks: tasksArray,
+                constraints: constraints,
+                energy: energy,
+                event: event
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                renderPlans(data.original_plan, data.adjusted_plan);
+
+            } catch (error) {
+                errorBox.textContent = `Error: ${error.message}`;
+                errorBox.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+
+        function renderPlans(original, adjusted) {
+            // Clear previous
+            originalPlanList.innerHTML = '';
+            adjustedPlanList.innerHTML = '';
+
+            // Safely map blocks
+            if (Array.isArray(original)) {
+                original.forEach(block => {
+                    originalPlanList.appendChild(createHtmlCard(block, false));
+                });
+            }
+
+            if (Array.isArray(adjusted)) {
+                adjusted.forEach(block => {
+                    adjustedPlanList.appendChild(createHtmlCard(block, true));
+                });
+            }
+
+            // Show container
+            resultsContainer.classList.add('active');
+
+            // Smooth scroll
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function createHtmlCard(block, isAdjusted) {
+            const item = document.createElement('div');
+            item.className = `timeline-item ${isAdjusted ? 'adjusted-item' : ''}`;
+
+            const badgeClass = isAdjusted ? 'time-badge adjusted-badge' : 'time-badge';
+
+            item.innerHTML = `
+            <div class="${badgeClass}">${escapeHtml(block.time || 'Unknown Time')}</div>
+            <div class="activity">${escapeHtml(block.activity || 'No Activity')}</div>
+            <div class="notes">${escapeHtml(block.notes || '')}</div>
+        `;
+            return item;
+        }
+
+        function escapeHtml(unsafe) {
+            return (unsafe || '').toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+
+</body>
+
+</html>
