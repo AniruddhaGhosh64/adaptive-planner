@@ -3,6 +3,7 @@ import json
 from typing import List
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -11,6 +12,14 @@ import google.generativeai as genai
 load_dotenv()
 
 app = FastAPI(title="Adaptive Planner")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Request schema
 class PlanRequest(BaseModel):
