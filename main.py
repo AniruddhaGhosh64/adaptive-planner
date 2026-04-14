@@ -2,6 +2,7 @@ import os
 import json
 from typing import List
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -27,6 +28,10 @@ class SmartRequest(PlanRequest):
 @app.get("/")
 def read_root():
     return {"status": "API is running"}
+
+@app.get("/ui")
+def serve_ui():
+    return FileResponse("index.html")
 
 _gemini_model = None
 
